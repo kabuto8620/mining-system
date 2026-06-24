@@ -528,6 +528,10 @@ def get_components(eid):
         grouped[cat].append(d)
     return jsonify(grouped)
 init_db()
+@app.route('/api/setup', methods=['GET'])
+def setup():
+    init_db()
+    return jsonify({"message": "DB inicializada correctamente"})
 if __name__ == '__main__':
     
     print("🚀 IMVET Mining System API → http://localhost:5000")
