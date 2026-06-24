@@ -527,8 +527,8 @@ def get_components(eid):
         if cat not in grouped: grouped[cat] = []
         grouped[cat].append(d)
     return jsonify(grouped)
-
+init_db()
 if __name__ == '__main__':
-    init_db()
+    
     print("🚀 IMVET Mining System API → http://localhost:5000")
     app.run(debug=False, port=5000)

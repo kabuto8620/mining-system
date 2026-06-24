@@ -1,0 +1,6 @@
+flask
+flask-cors
+bcrypt
+pyjwt
+reportlab
+gunicorn
