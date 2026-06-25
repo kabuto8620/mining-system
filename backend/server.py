@@ -9,7 +9,7 @@ import io
 
 app = Flask(__name__)
 #CORS(app, origins="*", supports_credentials=True, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-@app.after_request
+@app.after_requests
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', '*')
@@ -17,7 +17,9 @@ def after_request(response):
     return response
 @app.route('/api/<path:path>', methods=['OPTIONS'])
 def options_handler(path):
-    return '', 204
+    response = jsonify({})
+    response.status_code = 200
+    return response
 SECRET_KEY = "mining_secret_2024_secure"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "mining.db")
