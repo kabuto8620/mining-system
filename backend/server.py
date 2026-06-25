@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, make_response
 from flask_cors import CORS
 import sqlite3
 import bcrypt
@@ -8,18 +8,24 @@ import os
 import io
 
 app = Flask(__name__)
-#CORS(app, origins="*", supports_credentials=True, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+CORS(app)
+
+@app.before_request
+def handle_options():
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        return response
+
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', '*')
-    response.headers.add('Access-Control-Allow-Methods', '*')
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     return response
-@app.route('/api/<path:path>', methods=['OPTIONS'])
-def options_handler(path):
-    response = jsonify({})
-    response.status_code = 200
-    return response
+
 SECRET_KEY = "mining_secret_2024_secure"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "mining.db")
@@ -96,7 +102,6 @@ def init_db():
         if existing_count < 30:
             c.execute("DELETE FROM components WHERE equipment_id=?", (eid,))
             comps = [
-                # MOTOR TRIFASICO (DATOS TECNICOS - MARCA: WEG)
                 ("MOTOR TRIFASICO","MARCA","WEG"),
                 ("MOTOR TRIFASICO","TIPO","W22"),
                 ("MOTOR TRIFASICO","TRIFASICO","TRIFASICO"),
@@ -106,48 +111,45 @@ def init_db():
                 ("MOTOR TRIFASICO","FACTOR DE POTENCIA","0,90"),
                 ("MOTOR TRIFASICO","RPM","2800 rpm"),
                 ("MOTOR TRIFASICO","IP","55"),
-                ("MOTOR TRIFASICO","PERNO DE AJUSTE","3/4\""),
-                ("MOTOR TRIFASICO","VOLANDA PLANA","3/4\""),
-                ("MOTOR TRIFASICO","VOLANDA DE PRESION","3/4\""),
-                ("MOTOR TRIFASICO","TUERCA DE FIJACION","3/4\""),
-                # BOMBA DE AGUA (DATOS TECNICOS - MARCA: CAPRARI)
+                ("MOTOR TRIFASICO","PERNO DE AJUSTE","3/4"),
+                ("MOTOR TRIFASICO","VOLANDA PLANA","3/4"),
+                ("MOTOR TRIFASICO","VOLANDA DE PRESION","3/4"),
+                ("MOTOR TRIFASICO","TUERCA DE FIJACION","3/4"),
                 ("BOMBA DE AGUA","MARCA","CAPRARI"),
                 ("BOMBA DE AGUA","S/N","795395/5"),
                 ("BOMBA DE AGUA","TYPE","MEC-A2/80A"),
                 ("BOMBA DE AGUA","Hmax","100 m"),
-                ("BOMBA DE AGUA","MEI≥","0.40"),
+                ("BOMBA DE AGUA","MEI>=","0.40"),
                 ("BOMBA DE AGUA","ORIGEN","MODENA - ITALY"),
                 ("BOMBA DE AGUA","LUBRICANTE","LUBRICANTE"),
-                ("BOMBA DE AGUA","PERNO DE AJUSTE","5/8\""),
-                ("BOMBA DE AGUA","VOLANDA PLANA","5/8\""),
-                ("BOMBA DE AGUA","VOLANDA DE PRESION","5/8\""),
-                ("BOMBA DE AGUA","TUERCA DE FIJACION","5/8\""),
-                # SUCCION
-                ("SUCCION","CHUPADOR","DE 4\""),
-                ("SUCCION","MANGUERA DE ASPIRACION","DE 4\""),
-                ("SUCCION","BRIDA DE ACOPLE","4\" DE 8 PRF. 5/8\" e=10"),
-                ("SUCCION","EMPAQUE DE BRIDA","DE 4\""),
-                ("SUCCION","PERNO DE AJUSTE","5/8\""),
-                ("SUCCION","VOLANDA PLANA","5/8\""),
-                ("SUCCION","VOLANDA DE PRESION","5/8\""),
-                ("SUCCION","TUERCA DE FIJACION","5/8\""),
-                ("SUCCION","ABRAZADERA","DE 4\""),
-                # EXPULSION
-                ("EXPULSION","BRIDA DE ACOPLE","3\" DE 8 PRF. 5/8\" e=10"),
-                ("EXPULSION","EMPAQUE DE BRIDA","DE 3\""),
-                ("EXPULSION","PERNO DE AJUSTE","5/8\""),
-                ("EXPULSION","VOLANDA PLANA","5/8\""),
-                ("EXPULSION","VOLANDA DE PRESION","5/8\""),
-                ("EXPULSION","TUERCA DE FIJACION","5/8\""),
-                ("EXPULSION","LLAVE DE PASO DE BOLA","DE 3\""),
-                ("EXPULSION","BRIDA DE ACOPLE 2","4\" DE 8 PRF. 5/8\" e=10"),
-                ("EXPULSION","EMPAQUE DE BRIDA 2","DE 4\""),
-                ("EXPULSION","PERNO DE AJUSTE 2","5/8\""),
-                ("EXPULSION","VOLANDA PLANA 2","5/8\""),
-                ("EXPULSION","VOLANDA DE PRESION 2","5/8\""),
-                ("EXPULSION","TUERCA DE FIJACION 2","5/8\""),
-                ("EXPULSION","ABRAZADERA","DE 4\""),
-                ("EXPULSION","MANGUERA TIPO HDPE","DE 4\""),
+                ("BOMBA DE AGUA","PERNO DE AJUSTE","5/8"),
+                ("BOMBA DE AGUA","VOLANDA PLANA","5/8"),
+                ("BOMBA DE AGUA","VOLANDA DE PRESION","5/8"),
+                ("BOMBA DE AGUA","TUERCA DE FIJACION","5/8"),
+                ("SUCCION","CHUPADOR","DE 4"),
+                ("SUCCION","MANGUERA DE ASPIRACION","DE 4"),
+                ("SUCCION","BRIDA DE ACOPLE","4 DE 8 PRF. 5/8 e=10"),
+                ("SUCCION","EMPAQUE DE BRIDA","DE 4"),
+                ("SUCCION","PERNO DE AJUSTE","5/8"),
+                ("SUCCION","VOLANDA PLANA","5/8"),
+                ("SUCCION","VOLANDA DE PRESION","5/8"),
+                ("SUCCION","TUERCA DE FIJACION","5/8"),
+                ("SUCCION","ABRAZADERA","DE 4"),
+                ("EXPULSION","BRIDA DE ACOPLE","3 DE 8 PRF. 5/8 e=10"),
+                ("EXPULSION","EMPAQUE DE BRIDA","DE 3"),
+                ("EXPULSION","PERNO DE AJUSTE","5/8"),
+                ("EXPULSION","VOLANDA PLANA","5/8"),
+                ("EXPULSION","VOLANDA DE PRESION","5/8"),
+                ("EXPULSION","TUERCA DE FIJACION","5/8"),
+                ("EXPULSION","LLAVE DE PASO DE BOLA","DE 3"),
+                ("EXPULSION","BRIDA DE ACOPLE 2","4 DE 8 PRF. 5/8 e=10"),
+                ("EXPULSION","EMPAQUE DE BRIDA 2","DE 4"),
+                ("EXPULSION","PERNO DE AJUSTE 2","5/8"),
+                ("EXPULSION","VOLANDA PLANA 2","5/8"),
+                ("EXPULSION","VOLANDA DE PRESION 2","5/8"),
+                ("EXPULSION","TUERCA DE FIJACION 2","5/8"),
+                ("EXPULSION","ABRAZADERA","DE 4"),
+                ("EXPULSION","MANGUERA TIPO HDPE","DE 4"),
             ]
             for cat, name, spec in comps:
                 c.execute("INSERT INTO components (equipment_id, category, name, specification) VALUES (?,?,?,?)", (eid, cat, name, spec))
@@ -166,7 +168,7 @@ def token_required(f):
             data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
             request.user = data
         except:
-            return jsonify({'error': 'Token inválido'}), 401
+            return jsonify({'error': 'Token invalido'}), 401
         return f(*args, **kwargs)
     return decorated
 
@@ -231,12 +233,9 @@ def add_maintenance():
     conn.close()
     return jsonify({'message': 'Registro agregado'})
 
-# ── NUEVOS ENDPOINTS para gestión de logs ──────────────────────────────────
-
 @app.route('/api/maintenance/all', methods=['GET'])
 @token_required
 def get_all_maintenance():
-    """Todos los registros de mantenimiento con info del equipo"""
     conn = get_db()
     rows = conn.execute("""
         SELECT ml.*, e.name as equipment_name, e.area as equipment_area, e.number as equipment_number
@@ -266,7 +265,7 @@ def get_maintenance_detail(lid):
 def update_maintenance(lid):
     data = request.json
     conn = get_db()
-    conn.execute("""UPDATE maintenance_logs SET type=?, description=?, technician=?, next_maintenance=? WHERE id=?""",
+    conn.execute("UPDATE maintenance_logs SET type=?, description=?, technician=?, next_maintenance=? WHERE id=?",
                  (data.get('type'), data.get('description'), data.get('technician'), data.get('next_maintenance'), lid))
     conn.commit()
     conn.close()
@@ -284,7 +283,6 @@ def delete_maintenance(lid):
 @app.route('/api/maintenance/<int:lid>/pdf', methods=['GET'])
 @token_required
 def export_maintenance_pdf(lid):
-    """Genera PDF de un registro de mantenimiento en formato IMVET"""
     conn = get_db()
     log = conn.execute("""
         SELECT ml.*, e.name as equipment_name, e.area as equipment_area, e.number as equipment_number,
@@ -304,15 +302,13 @@ def export_maintenance_pdf(lid):
     from reportlab.lib import colors
     from reportlab.lib.units import cm, mm
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.platypus import Image as RLImage
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4,
         leftMargin=1.5*cm, rightMargin=1.5*cm,
         topMargin=1.5*cm, bottomMargin=1.5*cm)
 
-    from reportlab.platypus import Image as RLImage
-
-    # Colores IMVET
     ROJO = colors.HexColor('#CC0000')
     AZUL = colors.HexColor('#003366')
     GRIS_CLARO = colors.HexColor('#F5F5F5')
@@ -320,11 +316,9 @@ def export_maintenance_pdf(lid):
 
     story = []
 
-    # ── CABECERA con logos reales ─────────────────────────────────────────
     logo_imvet_path = os.path.join(BASE_DIR, 'logo_imvet.png')
     logo_mant_path  = os.path.join(BASE_DIR, 'logo_mantenimiento.png')
 
-    # Celda izquierda: imagen logo IMVET grande
     if os.path.exists(logo_imvet_path):
         logo_left_img = RLImage(logo_imvet_path, width=3.8*cm, height=3.0*cm)
         logo_left_img.hAlign = 'LEFT'
@@ -334,14 +328,12 @@ def export_maintenance_pdf(lid):
             '<font name="Helvetica-Bold" size="18" color="#CC0000">IMVET</font>',
             ParagraphStyle('logoFallback', leading=20))
 
-    # Celda central: título
     titulo_centro = Paragraph("""
         <font name="Helvetica-Bold" size="13">REGISTRO DE MANTENIMIENTO</font><br/>
         <font name="Helvetica-Bold" size="11">DEPARTAMENTO DE MANTENIMIENTO</font><br/>
         <font name="Helvetica" size="9">IMVET S.R.L.</font>
     """, ParagraphStyle('titulo', alignment=TA_CENTER, leading=16))
 
-    # Celda derecha: escudo Depto. Mantenimiento
     if os.path.exists(logo_mant_path):
         logo_right_img = RLImage(logo_mant_path, width=2.8*cm, height=2.8*cm)
         logo_right_img.hAlign = 'CENTER'
@@ -366,10 +358,8 @@ def export_maintenance_pdf(lid):
     story.append(header_table)
     story.append(Spacer(1, 10))
 
-    # ── DATOS GENERALES ──────────────────────────────────────────────────
-    fecha_mant = log.get('date','')[:10] if log.get('date') else '—'
-    proxima = log.get('next_maintenance','')[:10] if log.get('next_maintenance') else '—'
-
+    fecha_mant = log.get('date','')[:10] if log.get('date') else '-'
+    proxima = log.get('next_maintenance','')[:10] if log.get('next_maintenance') else '-'
     tipo_map = {'preventivo':'Preventivo','correctivo':'Correctivo','predictivo':'Predictivo'}
     tipo_label = tipo_map.get(log.get('type',''), log.get('type','').title())
 
@@ -377,15 +367,15 @@ def export_maintenance_pdf(lid):
         return Paragraph(f'<font name="Helvetica-Bold" size="8">{txt}</font>',
                          ParagraphStyle('h', textColor=colors.white))
     def val(txt):
-        return Paragraph(f'<font name="Helvetica" size="9">{txt or "—"}</font>',
+        return Paragraph(f'<font name="Helvetica" size="9">{txt or "-"}</font>',
                          ParagraphStyle('v'))
 
     general_data = [
-        [hdr('N° REGISTRO'), hdr('FECHA'), hdr('TIPO'), hdr('TÉCNICO RESPONSABLE')],
-        [val(f'REG-{str(log["id"]).zfill(4)}'), val(fecha_mant), val(tipo_label), val(log.get('technician','—'))],
-        [hdr('EQUIPO / MÁQUINA'), hdr('ÁREA'), hdr('N° EQUIPO'), hdr('PRÓXIMO MANTENIMIENTO')],
-        [val(log.get('equipment_name','—')), val(log.get('equipment_area','—')),
-         val(f'#{log.get("equipment_number","—")}'), val(proxima)],
+        [hdr('N REGISTRO'), hdr('FECHA'), hdr('TIPO'), hdr('TECNICO RESPONSABLE')],
+        [val(f'REG-{str(log["id"]).zfill(4)}'), val(fecha_mant), val(tipo_label), val(log.get('technician','-'))],
+        [hdr('EQUIPO / MAQUINA'), hdr('AREA'), hdr('N EQUIPO'), hdr('PROXIMO MANTENIMIENTO')],
+        [val(log.get('equipment_name','-')), val(log.get('equipment_area','-')),
+         val(f'#{log.get("equipment_number","-")}'), val(proxima)],
     ]
     gen_table = Table(general_data, colWidths=[4*cm, 3.5*cm, 3.5*cm, 7*cm])
     gen_table.setStyle(TableStyle([
@@ -402,8 +392,7 @@ def export_maintenance_pdf(lid):
     story.append(gen_table)
     story.append(Spacer(1, 10))
 
-    # ── DESCRIPCIÓN DEL TRABAJO ──────────────────────────────────────────
-    desc_header = Table([[hdr('DESCRIPCIÓN DEL TRABAJO REALIZADO')]],
+    desc_header = Table([[hdr('DESCRIPCION DEL TRABAJO REALIZADO')]],
         colWidths=[18*cm])
     desc_header.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), AZUL),
@@ -413,7 +402,7 @@ def export_maintenance_pdf(lid):
     ]))
     story.append(desc_header)
 
-    desc_text = log.get('description') or '—'
+    desc_text = log.get('description') or '-'
     desc_body = Table([[Paragraph(f'<font name="Helvetica" size="10">{desc_text}</font>',
                                    ParagraphStyle('desc', leading=14))]],
         colWidths=[18*cm])
@@ -429,7 +418,6 @@ def export_maintenance_pdf(lid):
     story.append(desc_body)
     story.append(Spacer(1, 10))
 
-    # ── TABLA DE ACTIVIDADES ─────────────────────────────────────────────
     act_header = Table([[hdr('ACTIVIDADES DE MANTENIMIENTO')]],
         colWidths=[18*cm])
     act_header.setStyle(TableStyle([
@@ -446,14 +434,14 @@ def export_maintenance_pdf(lid):
     area_tag_map = {
         'TRITURACION': '210', 'MOLIENDA': '220', 'FLOTACION': '240', 'RECIRCULACION': '260'
     }
-    tag = area_tag_map.get(log.get('equipment_area',''), '—')
+    tag = area_tag_map.get(log.get('equipment_area',''), '-')
 
     activities = [
-        [act_h('ÍTEM'), act_h('TAG'), act_h('DESCRIPCIÓN / ACTIVIDAD'), act_h('EQUIPO / ÁREA'), act_h('RECURSOS')],
+        [act_h('ITEM'), act_h('TAG'), act_h('DESCRIPCION / ACTIVIDAD'), act_h('EQUIPO / AREA'), act_h('RECURSOS')],
         [act_v('1'), act_v(f'{tag}-{str(log.get("equipment_number","")).zfill(2)}'),
          act_v(desc_text[:80] + ('...' if len(desc_text) > 80 else '')),
-         act_v(log.get('equipment_name','—')),
-         act_v(log.get('technician','—'))],
+         act_v(log.get('equipment_name','-')),
+         act_v(log.get('technician','-'))],
     ]
     act_table = Table(activities, colWidths=[1.2*cm, 2.5*cm, 7.3*cm, 4.5*cm, 2.5*cm])
     act_table.setStyle(TableStyle([
@@ -469,9 +457,6 @@ def export_maintenance_pdf(lid):
     story.append(act_table)
     story.append(Spacer(1, 16))
 
-    # ── FIRMAS ───────────────────────────────────────────────────────────
-    firma_style = ParagraphStyle('firma', alignment=TA_CENTER, fontSize=8, leading=12)
-
     firmas_data = [
         [
             Paragraph('<font name="Helvetica" size="8">____________________</font>', ParagraphStyle('f', alignment=TA_CENTER)),
@@ -481,11 +466,11 @@ def export_maintenance_pdf(lid):
         [
             Paragraph('<font name="Helvetica-Bold" size="8">J. Carlos Laurean Z.</font>', ParagraphStyle('f', alignment=TA_CENTER)),
             Paragraph('<font name="Helvetica-Bold" size="8">C. Kevin Mamani M.</font>', ParagraphStyle('f', alignment=TA_CENTER)),
-            Paragraph('<font name="Helvetica-Bold" size="8">Ing. Javier Chávez</font>', ParagraphStyle('f', alignment=TA_CENTER)),
+            Paragraph('<font name="Helvetica-Bold" size="8">Ing. Javier Chavez</font>', ParagraphStyle('f', alignment=TA_CENTER)),
         ],
         [
-            Paragraph('<font name="Helvetica" size="7" color="#555555">Tec. Mecánico</font>', ParagraphStyle('f', alignment=TA_CENTER)),
-            Paragraph('<font name="Helvetica" size="7" color="#555555">Tec. Mecánico</font>', ParagraphStyle('f', alignment=TA_CENTER)),
+            Paragraph('<font name="Helvetica" size="7" color="#555555">Tec. Mecanico</font>', ParagraphStyle('f', alignment=TA_CENTER)),
+            Paragraph('<font name="Helvetica" size="7" color="#555555">Tec. Mecanico</font>', ParagraphStyle('f', alignment=TA_CENTER)),
             Paragraph('<font name="Helvetica" size="7" color="#555555">Supdte. de Planta</font>', ParagraphStyle('f', alignment=TA_CENTER)),
         ],
     ]
@@ -498,13 +483,12 @@ def export_maintenance_pdf(lid):
     story.append(firma_table)
     story.append(Spacer(1, 8))
 
-    # ── PIE ──────────────────────────────────────────────────────────────
     story.append(HRFlowable(width="100%", thickness=1, color=ROJO))
     story.append(Spacer(1, 4))
     footer_style = ParagraphStyle('foot', alignment=TA_CENTER, fontSize=7, textColor=colors.HexColor('#666666'))
     story.append(Paragraph(
-        f'<font name="Helvetica" size="7" color="#666666">LA SEGURIDAD ES IMPORTANTE PARA EL TRABAJADOR — ¡TRABAJAR BIEN ES HACER BUENA SEGURIDAD! | '
-        f'Generado: {datetime.datetime.now().strftime("%d/%m/%Y %H:%M")} | IMVET S.R.L.</font>',
+        f'LA SEGURIDAD ES IMPORTANTE PARA EL TRABAJADOR - TRABAJAR BIEN ES HACER BUENA SEGURIDAD | '
+        f'Generado: {datetime.datetime.now().strftime("%d/%m/%Y %H:%M")} | IMVET S.R.L.',
         footer_style))
 
     doc.build(story)
@@ -538,12 +522,14 @@ def get_components(eid):
         if cat not in grouped: grouped[cat] = []
         grouped[cat].append(d)
     return jsonify(grouped)
+
 init_db()
+
 @app.route('/api/setup', methods=['GET'])
 def setup():
     init_db()
     return jsonify({"message": "DB inicializada correctamente"})
+
 if __name__ == '__main__':
-    
-    print("🚀 IMVET Mining System API → http://localhost:5000")
-    app.run(debug=False, port=5000)
+    print("IMVET Mining System API -> http://localhost:5000")
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
